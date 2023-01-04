@@ -10,3 +10,5 @@ from database_management import *
 delete_tables()
 
 create()
+
+insert_data()

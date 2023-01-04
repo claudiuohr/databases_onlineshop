@@ -90,9 +90,120 @@ def create():
         )
     '''
     )
+
+    cursor.execute(''' 
+        CREATE TRIGGER Trg_comanda_pret_total_insert
+        BEFORE INSERT ON comanda
+        FOR EACH ROW 
+        BEGIN
+            DECLARE aux_mem CHAR(1);
+            SELECT client.membership INTO aux_mem
+            FROM client
+            WHERE client.id_client = NEW.id_client;
+
+            IF (aux_mem = 1) THEN
+                SET NEW.pret_total = NEW.pret_total * 0.9;
+            ELSEIF (aux_mem = 0) THEN
+                SET NEW.pret_total = NEW.pret_total;
+            END IF;
+        END;
+    '''
+    )
+
+    cursor.execute(''' 
+        CREATE TRIGGER Trg_comanda_pret_total_update
+        BEFORE UPDATE ON comanda 
+        FOR EACH ROW 
+        BEGIN
+            DECLARE aux_mem CHAR(1);
+
+            SELECT client.membership INTO aux_mem
+            FROM client
+            WHERE client.id_client = NEW.id_client;
+
+            IF (aux_mem = 1) THEN
+                SET NEW.pret_total = NEW.pret_total * 0.9;
+            ELSEIF (aux_mem = 0) THEN
+                SET NEW.pret_total = NEW.pret_total;
+            END IF;
+        END;
+    '''
+    )
+
+    cursor.execute(''' 
+        CREATE TRIGGER Trg_update_prd_disp_insert
+        AFTER INSERT ON detalii_comanda
+        FOR EACH ROW
+        BEGIN
+                UPDATE produs
+                SET disponibilitate = disponibilitate - NEW.nr_prd
+                WHERE id_produs = NEW.id_produs;
+        END;
+    '''
+    )
+
+    cursor.execute(''' 
+        CREATE TRIGGER Trg_update_prd_disp_update
+            AFTER UPDATE ON detalii_comanda
+            FOR EACH ROW
+        BEGIN
+                UPDATE produs
+                SET disponibilitate = disponibilitate - NEW.nr_prd
+                WHERE id_produs = NEW.id_produs;
+        END;
+    '''
+    )
+
+    cursor.execute(''' 
+        CREATE TRIGGER Trg_update_total_price_insert
+        AFTER INSERT ON detalii_comanda
+        FOR EACH ROW
+        BEGIN
+            UPDATE comanda
+            SET pret_total = (SELECT SUM(d.nr_prd * p.pret)
+                            FROM detalii_comanda d, produs p
+                            WHERE d.id_produs = p.id_produs
+                            AND d.id_comanda = comanda.id_comanda);
+        END;
+    '''
+    )
+
+    cursor.execute(''' 
+        CREATE TRIGGER Trg_update_total_price_update
+        AFTER UPDATE ON detalii_comanda
+        FOR EACH ROW
+        BEGIN
+            UPDATE comanda
+            SET pret_total = (SELECT SUM(d.nr_prd * p.pret)
+                            FROM detalii_comanda d, produs p
+                            WHERE d.id_produs = p.id_produs
+                            AND d.id_comanda = comanda.id_comanda);
+        END;
+    '''
+    )
+
+    cursor.execute(''' 
+        CREATE TRIGGER TRG_detalii_com_nr_prd_disp
+        BEFORE INSERT ON detalii_comanda
+        FOR EACH ROW
+        BEGIN
+            DECLARE dis INT;
+            SELECT disponibilitate INTO dis
+            FROM produs
+            WHERE id_produs = NEW.id_produs;
+            
+            IF (dis < NEW.nr_prd) THEN
+                SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'Insufficient availability for product with ID ';
+            END IF;
+        END;
+    '''
+    )
+
     cursor.execute("COMMIT")
 
 def delete_tables():
+
     conn = connect_to_database()
     cursor = conn.cursor()
 
@@ -104,6 +215,72 @@ def delete_tables():
     for table in tables:
         table_name = table[0]
         cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
-        
+    
+    cursor.execute("SHOW TRIGGERS")
+    triggers = cursor.fetchall()
+
+    for trigger in triggers:
+        stmt = f"DROP TRIGGER {trigger[0]}"
+        cursor.execute(stmt)
+    
     cursor.execute("SET FOREIGN_KEY_CHECKS = 1")
+    cursor.execute("COMMIT")
+
+def insert_data():
+    conn = connect_to_database()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        INSERT INTO client (membership) VALUES
+        (0),
+        (0),
+        (1),
+        (1),
+        (1)
+    """)
+
+    cursor.execute("""
+        INSERT INTO detalii_client (adresa,adresa_email,nr_telefon,nume,prenume,id_client) VALUES
+        (null,'claudiuohr@gmail.com','0756412417','Ohriniuc','Claudiu',1),
+        ('Bulevardul chimiei pe capat','csmctl@gmail.com','0755412417','Cosmin','Catalin',2),
+        ('Botosani str Mihai Kogalniceanu nr2','marcelinooooo@yahoo.com','0226412417','Apetrei','Marcelino',3),
+        ('Brasov str Frizerului nr28','mihaipiticu@yahoo.com','0796412417','Piticu','Mihaita',4),
+        ('Hollywood','michaeljack@gmail.com','0356412417','Jackson','Michael',5)
+    """)
+
+    cursor.execute("""
+        INSERT INTO comanda (adresa_livrare,status,id_client) VALUES
+        ('Bulevardul chimiei pe capat','finalizata',1),
+        ('Bulevardul chimiei pe capat','in_desfasurare',1),
+        ('Botosani str Mihai Kogalniceanu nr2','finalizata',3);
+        ('Hollywood','finalizata',5),
+        ('Brasov str Frizerului nr28','in_desfasurare',2)
+    """)
+
+    cursor.execute("""
+        INSERT INTO metoda_de_plata (cash,card,id_comanda) VALUES
+        (1,0,1),
+        (0,1,2),
+        (0,1,3),
+        (0,1,4),
+        (1,0,5)
+    """)
+
+    cursor.execute("""
+        INSERT INTO produs (denumire,pret,disponibilitate) VALUES
+        ('casti',379,5),
+        ('mouse',189,14),
+        ('monitor',1099,3),
+        ('laptop',5099,6),
+        ('tastatura',499,6)
+    """)
+
+    cursor.execute("""
+        INSERT INTO detalii_comanda (nr_prd,id_produs,id_comanda) VALUES
+        (1,1,2),
+        (2,1,1),
+        (3,2,2),
+        (4,3,2),
+        (5,4,3)
+    """)
     cursor.execute("COMMIT")
