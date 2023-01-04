@@ -249,12 +249,12 @@ def insert_data():
     """)
 
     cursor.execute("""
-        INSERT INTO comanda (adresa_livrare,status,id_client) VALUES
-        ('Bulevardul chimiei pe capat','finalizata',1),
-        ('Bulevardul chimiei pe capat','in_desfasurare',1),
-        ('Botosani str Mihai Kogalniceanu nr2','finalizata',3);
-        ('Hollywood','finalizata',5),
-        ('Brasov str Frizerului nr28','in_desfasurare',2)
+        INSERT INTO comanda (pret_total,adresa_livrare,status,id_client) VALUES
+            (default,'Bulevardul chimiei pe capat','finalizata',1),
+            (default,'Bulevardul chimiei pe capat','in_desfasurare',4),
+            (default,'Botosani str Mihai Kogalniceanu nr2','finalizata',3),
+            (default,'Hollywood','finalizata',5),
+            (default,'Brasov str Frizerului nr28','in_desfasurare',2)
     """)
 
     cursor.execute("""
@@ -268,19 +268,19 @@ def insert_data():
 
     cursor.execute("""
         INSERT INTO produs (denumire,pret,disponibilitate) VALUES
-        ('casti',379,5),
+        ('casti',379,15),
         ('mouse',189,14),
-        ('monitor',1099,3),
-        ('laptop',5099,6),
-        ('tastatura',499,6)
+        ('monitor',1099,13),
+        ('laptop',5099,16),
+        ('tastatura',499,16)
     """)
 
     cursor.execute("""
         INSERT INTO detalii_comanda (nr_prd,id_produs,id_comanda) VALUES
         (1,1,2),
         (2,1,1),
-        (3,2,2),
-        (4,3,2),
+        (3,2,4),
+        (4,3,5),
         (5,4,3)
     """)
     cursor.execute("COMMIT")
