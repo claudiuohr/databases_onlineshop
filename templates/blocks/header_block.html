@@ -1,0 +1,24 @@
+{% block header_block %}
+<div class="row" style="width:30%">
+    <div class="col">
+        <form action="/customers" method="get">
+            <input type="submit" value="Customers">
+        </form>
+    </div>
+    <div class="col">
+        <form action="/create_tables" method="post">
+            <input type="submit" value="Create Tables">
+        </form>
+    </div>
+    <div class="col">
+        <form action="/insert_data" method="post">
+            <input type="submit" value="Insert in Tables">
+        </form>
+    </div>
+    <div class="col">
+        <form action="/delete_tables" method="post">
+            <input type="submit" value="Delete Tables">
+        </form>
+    </div>
+</div>
+{% endblock %}

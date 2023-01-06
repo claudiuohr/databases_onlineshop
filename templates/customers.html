@@ -1,0 +1,61 @@
+<html>
+    <head>
+        <title>Customers</title>
+        {% include 'blocks/css_links.html' %}
+    </head>
+    <body>
+        {% include 'blocks/header_block.html' %}
+        <h1 class="text-center">Customers</h1>
+
+
+        <div class="container-fluid" style="height:100%;width:100%">
+            <div class="row justify-content-center align-items-center" >
+                <div class="col-1" style="width:60%">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">ID</th>
+                                <th scope="col">LastName</th>
+                                <th scope="col">FirstName</th>
+                                <th scope="col">Address</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Phone</th>
+                                <th scope="col">Membership</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for customer in customers %}
+                            <tr>
+                                <th scope="row">{{ customer[0] }}</th>
+                                <td>{{ customer[4] }}</td>
+                                <td>{{ customer[5] }}</td>
+                                <td>{{ customer[1] }}</td>
+                                <td>{{ customer[2] }}</td>
+                                <td>{{ customer[3] }}</td>
+                                <td>{{ customer[6] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="col-1" style="width:40%">
+                    
+                    <form action="/add_customer" method="post">
+                        <input type="text" name="nume" id="nume" placeholder="LastName" class="input_form">
+                        <input type="text" name="prenume" id="prenume" placeholder="FirstName" class="input_form">
+                        <input type="text" name="adresa" id="adresa" placeholder="Adress" class="input_form">
+                        <div class="input-group">
+                        <span class="input-group-text" for="email" style="width:15%">Email</span>
+                        <input type="text" name="adresa_email" id="adresa_email" placeholder="Email" class="input_form">
+                        </div>
+                        <input type="text" name="nr_telefon" id="nr_telefon" placeholder="Phone" class="input_form">
+                        <input type="text" name="membership" id="membership" placeholder="Membership" class="input_form">
+                        <input type="submit" value="Add Customer" style="width:50%">
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% include 'blocks/js_links.html' %}
+    </body>
+</html>
