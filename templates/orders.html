@@ -1,0 +1,58 @@
+<html>
+    <head>
+        <title>Orders</title>
+        {% include 'blocks/css_links.html' %}
+    </head>
+    <body>
+        {% include 'blocks/header_block.html' %}
+        <h1 class="text-center">Orders</h1>
+
+        <div class="container-fluid" style="height:100%;width:100%">
+            <div class="row justify-content-center align-items-center" >
+                <div class="col-1" style="width:60%">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">ID_ORDER</th>
+                                <th scope="col">ID_CUSTOMER</th>
+                                <th scope="col">ID_PRODUCT</th>
+                                <th scope="col">QUANTITY</th>
+                                <th scope="col">TOTAL_PRICE</th>
+                                <th scope="col">DELIVERY_ADDRESS</th>
+                                <th scope="col">STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr>
+                                <th scope="row">{{ order[0] }}</th>
+                                <td>{{ order[1] }}</td>
+                                <td>{{ order[2] }}</td>
+                                <td>{{ order[3] }}</td>
+                                <td>{{ order[4] }}</td>
+                                <td>{{ order[5] }}</td>
+                                <td>{{ order[6] }}</td>
+                                <td>{{ order[7] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="col-1" style="width:40%">
+                    
+                    <form action="/add_product" method="post">
+                        <input type="text" name="id_comanda" id="id_comanda" placeholder="ID_ORDER" class="input_form">
+                        <input type="text" name="id_client" id="id_client" placeholder="ID_CUSTOMER" class="input_form">
+                        <input type="text" name="id_produs" id="id_produs" placeholder="ID_PRODUCT" class="input_form">
+                        <input type="text" name="nr_prd" id="nr_prd" placeholder="QUANTITY" class="input_form">
+                        <input type="text" name="adresa_livrare" id="adresa_livrare" placeholder="DELIVERY_ADDRESS" class="input_form">
+                        <input type="text" name="status" id="status" placeholder="STATUS" class="input_form">
+                        <input type="submit" value="Add Product" style="width:50%">
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% include 'blocks/js_links.html' %}
+    </body>
+</html>

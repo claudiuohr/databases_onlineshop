@@ -39,11 +39,11 @@ def create_tables():
     cursor.execute(''' 
         CREATE TABLE detalii_client (
             id_client    INT NOT NULL,
-            adresa       VARCHAR(40),
-            adresa_email VARCHAR(40) NOT NULL,
-            nr_telefon   CHAR(10) NOT NULL,
             nume         VARCHAR(25) NOT NULL,
             prenume      VARCHAR(25) NOT NULL,
+            adresa       VARCHAR(40),
+            adresa_email VARCHAR(40) UNIQUE NOT NULL,
+            nr_telefon   CHAR(10) UNIQUE NOT NULL,
             constraint detalii_comanda_email CHECK (adresa_email REGEXP '[a-z0-9._%-]+@[a-z0-9._%-]+\.[a-z]{2,4}'),
             constraint detalii_comanda_nr_telefon CHECK (nr_telefon REGEXP '^[0][:7:3:2][0-9 ]*$'),
             constraint detalii_comanda_nume CHECK (nume REGEXP '[A-Za-z]*'),

@@ -1,0 +1,45 @@
+<html>
+    <head>
+        <title>Paying_methods</title>
+        {% include 'blocks/css_links.html' %}
+    </head>
+    <body>
+        {% include 'blocks/header_block.html' %}
+        <h1 class="text-center">Paying_methods</h1>
+
+        <div class="container-fluid" style="height:100%;width:100%">
+            <div class="row justify-content-center align-items-center" >
+                <div class="col-1" style="width:60%">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">ID_COMANDA</th>
+                                <th scope="col">CASH</th>
+                                <th scope="col">CARD</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for paying_method in paying_methods %}
+                            <tr>
+                                <th scope="row">{{ paying_method[0] }}</th>
+                                <td>{{ paying_method[1] }}</td>
+                                <td>{{ paying_method[2] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="col-1" style="width:40%">
+                    <form action="/add_paying_method" method="post">
+                        <input type="text" name="id_comanda" id="id_comanda" placeholder="ID_COMANDA" class="input_form">
+                        <input type="text" name="cash" id="cash" placeholder="CASH" class="input_form">
+                        <input type="text" name="card" id="card" placeholder="CARD" class="input_form">
+                        <input type="submit" value="Add Paying_method" style="width:50%">
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% include 'blocks/js_links.html' %}
+    </body>
+</html>

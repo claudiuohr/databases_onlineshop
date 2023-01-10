@@ -1,0 +1,54 @@
+<html>
+    <head>
+        <title>Products</title>
+        {% include 'blocks/css_links.html' %}
+    </head>
+    <body>
+        {% include 'blocks/header_block.html' %}
+        <h1 class="text-center">Products</h1>
+
+        <div class="container-fluid" style="height:100%;width:100%">
+            <div class="row justify-content-center align-items-center" >
+                <div class="col-1" style="width:60%">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">ID</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Price</th>
+                                <th scope="col">Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in products %}
+                            <tr>
+                                <th scope="row">{{ product[0] }}</th>
+                                <td>{{ product[1] }}</td>
+                                <td>{{ product[2] }}</td>
+                                <td>{{ product[3] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-1" style="width:40%">
+                    <form action="/add_product" method="post">
+                        <input type="text" name="denumire" id="denumire" placeholder="Name" class="input_form">
+                        <input type="text" name="pret" id="pret" placeholder="Price" class="input_form">
+                        <input type="text" name="disponibilitate" id="disponibilitate" placeholder="Quantity" class="input_form">
+                        <input type="submit" value="Add Product" style="width:50%">
+                    </form>
+                </div>
+                <div class="col-1" style="width:40%">
+                    <form action="/update_product" method="post">
+                        <input type="text" name="id_produs" id="id_produs" placeholder="ID_PRODUCT" class="input_form">
+                        <input type="text" name="pret" id="pret" placeholder="Price" class="input_form">
+                        <input type="text" name="disponibilitate" id="disponibilitate" placeholder="Quantity" class="input_form">
+                        <input type="submit" value="Update Product" style="width:50%">
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% include 'blocks/js_links.html' %}
+    </body>
+</html>
