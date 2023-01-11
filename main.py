@@ -75,10 +75,16 @@ def handle_update_product():
     disponibilitate=request.form['disponibilitate']
     conn = connect_to_database()
     cursor = conn.cursor()
-    cursor.execute(""" UPDATE produs SET 
-    pret= IF(%s IS NOT NULL,%s,pret),
-    disponibilitate= IF(%s IS NOT NULL,%s,disponibilitate) 
-    WHERE id_produs=%s""",(pret,pret,disponibilitate,disponibilitate,id_produs))
+
+    if pret != '':
+        cursor.execute(""" UPDATE produs 
+        SET pret=%s
+        WHERE id_produs=%s""",(pret,id_produs))
+    if disponibilitate != '':
+        cursor.execute(""" UPDATE produs 
+        SET disponibilitate=%s
+        WHERE id_produs=%s""",(disponibilitate,id_produs))
+
     cursor.execute("COMMIT")
     return redirect('/products')
 
@@ -120,5 +126,17 @@ def handle_add_paying_method():
     conn = connect_to_database()
     cursor=conn.cursor()
     cursor.execute("""INSERT INTO metoda_de_plata (id_comanda,cash,card) VALUES (%s,%s,%s)""",(id_comanda,cash,card))
+    cursor.execute("COMMIT")
+    return redirect('/paying_methods')
+
+@app.route('/update_paying_method',methods=['GET','POST'])
+def handle_update_paying_method():
+    id_comanda=request.form['id_comanda']
+    cash=request.form['cash']
+    card=request.form['card']
+    conn = connect_to_database()
+    cursor=conn.cursor()
+    if cash != '' and card != '':
+        cursor.execute("""UPDATE metoda_de_plata SET cash=%s,card=%s WHERE id_comanda=%s""",(cash,card,id_comanda))
     cursor.execute("COMMIT")
     return redirect('/paying_methods')

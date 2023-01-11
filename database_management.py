@@ -59,7 +59,6 @@ def create_tables():
             cash       CHAR(1) DEFAULT '0' NOT NULL,
             card       CHAR(1) DEFAULT '1' NOT NULL,
             id_comanda INT NOT NULL,
-            CHECK (cash <> card),
             PRIMARY KEY (id_comanda),
             FOREIGN KEY (id_comanda) REFERENCES comanda(id_comanda)
         )
@@ -195,6 +194,30 @@ def create_tables():
             IF (dis < NEW.nr_prd) THEN
                 SIGNAL SQLSTATE '45000'
                 SET MESSAGE_TEXT = 'Insufficient availability for product with ID ';
+            END IF;
+        END;
+    '''
+    )
+
+    cursor.execute(''' 
+        CREATE TRIGGER TRG_met_plata_ins_diff
+        AFTER INSERT ON metoda_de_plata
+        FOR EACH ROW
+        BEGIN
+             IF NEW.card = NEW.cash THEN
+                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Card and cash cannot be the same insert';
+            END IF;
+        END;
+    '''
+    )
+
+    cursor.execute(''' 
+        CREATE TRIGGER TRG_met_plata_upd_diff
+        AFTER UPDATE ON metoda_de_plata
+        FOR EACH ROW
+        BEGIN
+             IF NEW.card = NEW.cash THEN
+                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Card and cash cannot be the same update';
             END IF;
         END;
     '''
