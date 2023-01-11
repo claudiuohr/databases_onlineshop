@@ -46,6 +46,12 @@
                         <input type="submit" value="Update Paying_method" style="width:50%">
                     </form>
                 </div>
+                <div class="col-1" style="width:40%">
+                    <form action="/delete_paying_method" method="post">
+                        <input type="text" name="id_comanda" id="id_comanda" placeholder="ID_COMANDA" class="input_form">
+                        <input type="submit" value="Delete Paying_method" style="width:50%">
+                    </form>
+                </div>
             </div>
         </div>
         {% include 'blocks/js_links.html' %}

@@ -48,6 +48,12 @@
                         <input type="submit" value="Update Product" style="width:50%">
                     </form>
                 </div>
+                <div class="col-1" style="width:40%">
+                    <form action="/delete_product" method="post">
+                        <input type="text" name="id_produs" id="id_produs" placeholder="ID_PRODUCT" class="input_form">
+                        <input type="submit" value="Delete Product" style="width:50%">
+                    </form>
+                </div>
             </div>
         </div>
         {% include 'blocks/js_links.html' %}

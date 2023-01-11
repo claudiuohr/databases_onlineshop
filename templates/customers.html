@@ -68,6 +68,12 @@
                         <input type="submit" value="Update Customer" style="width:50%">
                     </form>
                 </div>
+                <div class="col-1" style="width:40%">
+                    <form action="/delete_customer" method="post">
+                        <input type="text" name="id_client" id="id_client" placeholder="ID" class="input_form">
+                        <input type="submit" value="Delete Customer" style="width:50%">
+                    </form>
+                </div>
             </div>
         </div>
         {% include 'blocks/js_links.html' %}

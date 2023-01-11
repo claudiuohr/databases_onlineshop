@@ -77,6 +77,19 @@ def handle_update_customer():
     
     return redirect('/customers')
 
+@app.route('/delete_customer',methods=['GET','POST'])
+def handle_delete_customer():
+    id_client = request.form['id_client']
+    conn = connect_to_database()
+    cursor = conn.cursor()
+    cursor.execute(f"""DELETE FROM detalii_client WHERE id_client={id_client}""")
+    cursor.execute(f"""DELETE FROM metoda_de_plata WHERE id_comanda IN (SELECT id_comanda FROM comanda WHERE id_client={id_client})""")
+    cursor.execute(f"""DELETE FROM detalii_comanda WHERE id_comanda IN (SELECT id_comanda FROM comanda WHERE id_client={id_client})""")
+    cursor.execute(f"""DELETE FROM comanda WHERE id_client={id_client}""")
+    cursor.execute(f"""DELETE FROM client WHERE id_client={id_client}""")
+    cursor.execute("COMMIT")
+    return redirect('/customers')
+
 @app.route('/products',methods=['GET'])
 def handle_products():
     conn = connect_to_database()
@@ -112,6 +125,16 @@ def handle_update_product():
         cursor.execute(""" UPDATE produs SET disponibilitate=%s WHERE id_produs=%s""",(disponibilitate,id_produs))
     if pret != '' or disponibilitate != '' or denumire != '':
         cursor.execute("COMMIT")
+    return redirect('/products')
+
+@app.route('/delete_product',methods=['GET','POST'])
+def handle_delete_product():
+    id_produs=request.form['id_produs']
+    conn = connect_to_database()
+    cursor = conn.cursor()
+    cursor.execute(f"""DELETE FROM detalii_comanda WHERE id_produs={id_produs}""")
+    cursor.execute(f"""DELETE FROM produs WHERE id_produs={id_produs}""")
+    cursor.execute("COMMIT")
     return redirect('/products')
 
 @app.route('/orders',methods=['GET'])
@@ -152,6 +175,15 @@ def handle_add_paying_method():
     conn = connect_to_database()
     cursor=conn.cursor()
     cursor.execute("""INSERT INTO metoda_de_plata (id_comanda,cash,card) VALUES (%s,%s,%s)""",(id_comanda,cash,card))
+    cursor.execute("COMMIT")
+    return redirect('/paying_methods')
+
+@app.route('/delete_paying_method',methods=['GET','POST'])
+def handle_delete_paying_method():
+    id_comanda=request.form['id_comanda']
+    conn = connect_to_database()
+    cursor=conn.cursor()
+    cursor.execute(f"""DELETE FROM metoda_de_plata WHERE id_comanda={id_comanda}""")
     cursor.execute("COMMIT")
     return redirect('/paying_methods')
 
