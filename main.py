@@ -49,6 +49,34 @@ def handle_add_customer():
     cursor.execute("COMMIT")
     return redirect('/customers')
 
+@app.route('/update_customer',methods=['GET','POST'])
+def handle_update_customer():
+    id_client = request.form['id_client']
+    membership = request.form['membership']
+    nume = request.form['nume']
+    prenume = request.form['prenume']
+    adresa = request.form['adresa']
+    adresa_email = request.form['adresa_email']
+    nr_telefon = request.form['nr_telefon']
+    conn = connect_to_database()
+    cursor = conn.cursor()
+    if membership != '':
+        cursor.execute(f"""UPDATE client SET membership={membership} WHERE id_client={id_client}""")
+    if nume != '':
+        cursor.execute(f"""UPDATE detalii_client SET nume='{nume}' WHERE id_client={id_client}""")
+    if prenume != '':
+        cursor.execute(f"""UPDATE detalii_client SET prenume='{prenume}' WHERE id_client={id_client}""")
+    if adresa != '':
+        cursor.execute(f"""UPDATE detalii_client SET adresa='{adresa}' WHERE id_client={id_client}""")
+    if adresa_email != '':
+        cursor.execute(f"""UPDATE detalii_client SET adresa_email='{adresa_email}' WHERE id_client={id_client}""")    
+    if nr_telefon != '':
+        cursor.execute(f"""UPDATE detalii_client SET nr_telefon='{nr_telefon}' WHERE id_client={id_client}""")
+    if membership != '' or nume != '' or prenume != '' or adresa != '' or adresa_email != '' or nr_telefon != '':
+        cursor.execute("COMMIT")
+    
+    return redirect('/customers')
+
 @app.route('/products',methods=['GET'])
 def handle_products():
     conn = connect_to_database()
@@ -71,21 +99,19 @@ def handle_add_product():
 @app.route('/update_product',methods=['GET','POST'])
 def handle_update_product():
     id_produs=request.form['id_produs']
+    denumire=request.form['denumire']
     pret=request.form['pret']
     disponibilitate=request.form['disponibilitate']
     conn = connect_to_database()
     cursor = conn.cursor()
-
+    if denumire != '':
+        cursor.execute(""" UPDATE produs SET denumire=%s WHERE id_produs=%s""",(denumire,id_produs))
     if pret != '':
-        cursor.execute(""" UPDATE produs 
-        SET pret=%s
-        WHERE id_produs=%s""",(pret,id_produs))
+        cursor.execute(""" UPDATE produs SET pret=%s WHERE id_produs=%s""",(pret,id_produs))
     if disponibilitate != '':
-        cursor.execute(""" UPDATE produs 
-        SET disponibilitate=%s
-        WHERE id_produs=%s""",(disponibilitate,id_produs))
-
-    cursor.execute("COMMIT")
+        cursor.execute(""" UPDATE produs SET disponibilitate=%s WHERE id_produs=%s""",(disponibilitate,id_produs))
+    if pret != '' or disponibilitate != '' or denumire != '':
+        cursor.execute("COMMIT")
     return redirect('/products')
 
 @app.route('/orders',methods=['GET'])
