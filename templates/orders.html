@@ -15,7 +15,8 @@
                             <tr>
                                 <th scope="col">ID_ORDER</th>
                                 <th scope="col">ID_CUSTOMER</th>
-                                <th scope="col">TOTAL_PRICE</th>
+                                <th scope="col">ID_CUSTOMER</th>
+                                <th scope="col">PAYING_METHOD</th>
                                 <th scope="col">DELIVERY_ADDRESS</th>
                                 <th scope="col">STATUS</th>
                             </tr>
@@ -29,6 +30,7 @@
                                 <td>{{ order[3] }}</td>
                                 <td>{{ order[4] }}</td>
                                 <td>{{ order[5] }}</td>
+                                <td>{{ order[6] }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>

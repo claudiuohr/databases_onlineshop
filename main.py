@@ -136,11 +136,68 @@ def handle_delete_product():
     cursor.execute("COMMIT")
     return redirect('/products')
 
+@app.route('/add_to_cart',methods=['GET','POST'])
+def handle_add_to_cart():
+    id_produs=request.form['id_produs']
+    cantitate=request.form['cantitate']
+    conn = connect_to_database()
+    cursor = conn.cursor()
+    cursor.execute("""INSERT INTO cos (id_produs,cantitate) VALUES (%s,%s)""",(id_produs,cantitate))
+    cursor.execute("COMMIT")
+    return redirect('/products')
+
+@app.route('/cart',methods=['GET'])
+def handle_cart():
+    conn = connect_to_database()
+    cursor = conn.cursor()
+    cursor.execute("""SELECT c.id_produs,p.denumire,p.pret,c.cantitate FROM produs p JOIN cos c ON p.id_produs=c.id_produs""")
+    cart = cursor.fetchall()
+    return render_template('cart.html',cart=cart)
+
+@app.route('/modify_cart',methods=['GET','POST'])
+def handle_modify_cart():
+    id_produs=request.form['id_produs']
+    cantitate=request.form['cantitate']
+    conn = connect_to_database()
+    cursor = conn.cursor()
+    if cantitate != '':
+        cursor.execute("""UPDATE cos SET cantitate=%s WHERE id_produs=%s""",(cantitate,id_produs))
+    if cantitate == '0':
+        cursor.execute(f"""DELETE FROM cos WHERE id_produs={id_produs}""")
+    cursor.execute("COMMIT")
+    return redirect('/cart')
+
+@app.route('/empty_cart',methods=['GET','POST'])
+def handle_empty_cart():
+    conn = connect_to_database()
+    cursor = conn.cursor()
+    cursor.execute("""DELETE FROM cos""")
+    cursor.execute("COMMIT")
+    return redirect('/cart')
+
+@app.route('/purchase',methods=['GET','POST'])
+def handle_purchase():
+    id_client=request.form['id_client']
+    metoda_plata=request.form['metoda_plata']
+    adresa_livrare=request.form['adresa_livrare']
+    conn = connect_to_database()
+    cursor = conn.cursor()
+    cursor.execute("""SELECT id_produs,cantitate FROM cos""")
+    cart = cursor.fetchall()
+    cursor.execute("""INSERT INTO comanda (id_client,pret_total,metoda_plata,adresa_livrare,status) VALUES (%s,%s,%s,%s,%s)""",(id_client,0,metoda_plata,adresa_livrare,'in_curs_de_procesare'))
+    cursor.execute("COMMIT")
+    for product in cart:
+        cursor.execute("""INSERT INTO detalii_comanda (id_comanda,id_produs,nr_prd) VALUES (LAST_INSERT_ID(),%s,%s)""",(product[0],product[1]))
+        cursor.execute("COMMIT")
+    cursor.execute("""DELETE FROM cos""")
+    cursor.execute("COMMIT")
+    return redirect('/cart')
+
 @app.route('/orders',methods=['GET'])
 def handle_orders():
     conn = connect_to_database()
     cursor = conn.cursor()
-    cursor.execute("""SELECT o.id_comanda,o.id_client,o.pret_total,o.adresa_livrare,o.status FROM comanda o JOIN detalii_comanda d ON o.id_comanda=d.id_comanda""")
+    cursor.execute("""SELECT o.id_comanda,o.id_client,o.pret_total,o.metoda_plata,o.adresa_livrare,o.status FROM comanda o""")
     orders = cursor.fetchall()
     return render_template('orders.html',orders=orders)
 
@@ -149,7 +206,6 @@ def handle_delete_order():
     id_comanda=request.form['id_comanda']
     conn = connect_to_database()
     cursor = conn.cursor()
-    cursor.execute(f"""DELETE FROM metoda_de_plata WHERE id_comanda={id_comanda}""")
     cursor.execute(f"""DELETE FROM detalii_comanda WHERE id_comanda={id_comanda}""")
     cursor.execute(f"""DELETE FROM comanda WHERE id_comanda={id_comanda}""")
     cursor.execute("COMMIT")
@@ -166,7 +222,6 @@ def handle_details_order_btn():
 @app.route('/details_orders',methods=['GET'])
 def handle_details_order():
     id_comanda = request.args.get('id_comanda')
-    print(id_comanda)
     if id_comanda:   
         conn = connect_to_database()
         cursor = conn.cursor()
@@ -175,44 +230,3 @@ def handle_details_order():
         return render_template('details_orders.html',details_orders=details_orders)
     else:
         return "No id_comanda provided"
-
-
-@app.route('/paying_methods',methods=['GET'])
-def handle_paying_methods():
-    conn = connect_to_database()
-    cursor = conn.cursor()
-    cursor.execute('SELECT id_comanda,cash,card FROM metoda_de_plata')
-    paying_methods = cursor.fetchall()
-    return render_template('paying_methods.html',paying_methods=paying_methods)
-
-@app.route('/add_paying_method',methods=['GET','POST'])
-def handle_add_paying_method():
-    id_comanda=request.form['id_comanda']
-    cash=request.form['cash']
-    card=request.form['card']
-    conn = connect_to_database()
-    cursor=conn.cursor()
-    cursor.execute("""INSERT INTO metoda_de_plata (id_comanda,cash,card) VALUES (%s,%s,%s)""",(id_comanda,cash,card))
-    cursor.execute("COMMIT")
-    return redirect('/paying_methods')
-
-@app.route('/delete_paying_method',methods=['GET','POST'])
-def handle_delete_paying_method():
-    id_comanda=request.form['id_comanda']
-    conn = connect_to_database()
-    cursor=conn.cursor()
-    cursor.execute(f"""DELETE FROM metoda_de_plata WHERE id_comanda={id_comanda}""")
-    cursor.execute("COMMIT")
-    return redirect('/paying_methods')
-
-@app.route('/update_paying_method',methods=['GET','POST'])
-def handle_update_paying_method():
-    id_comanda=request.form['id_comanda']
-    cash=request.form['cash']
-    card=request.form['card']
-    conn = connect_to_database()
-    cursor=conn.cursor()
-    if cash != '' and card != '':
-        cursor.execute("""UPDATE metoda_de_plata SET cash=%s,card=%s WHERE id_comanda=%s""",(cash,card,id_comanda))
-    cursor.execute("COMMIT")
-    return redirect('/paying_methods')

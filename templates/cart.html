@@ -1,0 +1,58 @@
+<html>
+    <head>
+        <title>Cart</title>
+        {% include 'blocks/css_links.html' %}
+    </head>
+    <body>
+        {% include 'blocks/header_block.html' %}
+        <h1 class="text-center">Cart</h1>
+
+        <div class="container-fluid" style="height:100%;width:100%">
+            <div class="row justify-content-center align-items-center" >
+                <div class="col-1" style="width:60%">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">ID_PRODUCT</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Price</th>
+                                <th scope="col">Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in cart %}
+                            <tr>
+                                <th scope="row">{{ product[0] }}</th>
+                                <td>{{ product[1] }}</td>
+                                <td>{{ product[2] }}</td>
+                                <td>{{ product[3] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-1" style="width:40%">
+                    <form action="/modify_cart" method="post">
+                        <input type="text" name="id_produs" id="id_produs" placeholder="ID_PRODUCT" class="input_form">
+                        <input type="text" name="cantitate" id="cantitate" placeholder="QUANTITY" class="input_form">
+                        <input type="submit" value="Modify Cart" style="width:50%">
+                    </form>
+                </div>
+                <div class="col-1" style="width:40%">
+                    <form action="/empty_cart" method="post">
+                        <input type="submit" value="Empty Cart" style="width:50%">
+                    </form>
+                </div>
+                <div class="col-1" style="width:40%">
+                    <form action="/purchase" method="post">
+                        <input type="text" name="id_client" id="id_client" placeholder="ID_CLIENT" class="input_form">
+                        <input type="text" name="metoda_plata" id="metoda_plata" placeholder="PAYING_METHOD" class="input_form">
+                        <input type="text" name="adresa_livrare" id="adresa_livrare" placeholder="DELIVERY_ADDRESS" class="input_form">
+                        <input type="submit" value="Purchase" style="width:50%">
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% include 'blocks/js_links.html' %}
+    </body>
+</html>

@@ -24,14 +24,16 @@ def create_tables():
     cursor.execute(''' 
         CREATE TABLE comanda (
             id_comanda     INT NOT NULL AUTO_INCREMENT,
+            id_client      INT NOT NULL,
             pret_total     INT DEFAULT '0',
+            metoda_plata   VARCHAR(20) NOT NULL,
             adresa_livrare VARCHAR(40) NOT NULL,
             status         VARCHAR(20) NOT NULL,
-            id_client      INT NOT NULL,
             PRIMARY KEY (id_comanda),
             FOREIGN KEY (id_client) REFERENCES client(id_client),
             constraint comanda_pret_total CHECK (pret_total >= 0),
-            constraint comanda_status CHECK (status IN ('finalizata', 'in_desfasurare'))
+            constraint comanda_status CHECK (status IN ('finalizata', 'in_desfasurare','in_curs_de_procesare')),
+            constraint comanda_metoda_plata CHECK (metoda_plata IN ('cash', 'card'))
         ) 
     '''
     )
@@ -55,34 +57,23 @@ def create_tables():
     )
 
     cursor.execute(''' 
-        CREATE TABLE metoda_de_plata (
-            cash       CHAR(1) DEFAULT '0' NOT NULL,
-            card       CHAR(1) DEFAULT '1' NOT NULL,
-            id_comanda INT NOT NULL,
-            PRIMARY KEY (id_comanda),
-            FOREIGN KEY (id_comanda) REFERENCES comanda(id_comanda)
-        )
-    '''
-    )
-
-    cursor.execute(''' 
         CREATE TABLE produs (
-            id_produs INT NOT NULL AUTO_INCREMENT,
+            id_produs  INT NOT NULL AUTO_INCREMENT,
             denumire   VARCHAR(30) NOT NULL,
             pret       INT NOT NULL,
-            cantitate INT NOT NULL,
+            cantitate  INT NOT NULL,
             disponibilitate CHAR(1) DEFAULT '1' NOT NULL,
             PRIMARY KEY (id_produs),
-            CHECK (cantitate > 0),
-            CHECK (pret > 0)
+            constraint produs_cantitate CHECK (cantitate > 0),
+            constraint produs_pret CHECK (pret > 0)
         )
     '''
     )
 
     cursor.execute(''' 
         CREATE TABLE detalii_comanda (
-            id_produs INT NOT NULL,
             id_comanda INT NOT NULL,
+            id_produs INT NOT NULL,
             nr_prd     INT NOT NULL,
             PRIMARY KEY (id_comanda,id_produs),
             FOREIGN KEY (id_comanda) REFERENCES comanda(id_comanda),
@@ -90,6 +81,14 @@ def create_tables():
         )
     '''
     )
+
+    cursor.execute('''
+        CREATE TABLE cos (
+            id_produs INT NOT NULL,
+            cantitate INT NOT NULL,
+            FOREIGN KEY (id_produs) REFERENCES produs(id_produs)
+        )
+    ''')
 
     cursor.execute(''' 
         CREATE TRIGGER Trg_comanda_pret_total_insert
@@ -200,29 +199,7 @@ def create_tables():
     '''
     )
 
-    cursor.execute(''' 
-        CREATE TRIGGER TRG_met_plata_ins_diff
-        AFTER INSERT ON metoda_de_plata
-        FOR EACH ROW
-        BEGIN
-             IF NEW.card = NEW.cash THEN
-                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Card and cash cannot be the same insert';
-            END IF;
-        END;
-    '''
-    )
-
-    cursor.execute(''' 
-        CREATE TRIGGER TRG_met_plata_upd_diff
-        AFTER UPDATE ON metoda_de_plata
-        FOR EACH ROW
-        BEGIN
-             IF NEW.card = NEW.cash THEN
-                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Card and cash cannot be the same update';
-            END IF;
-        END;
-    '''
-    )
+    
 
     cursor.execute("COMMIT")
 
@@ -273,21 +250,12 @@ def insert_data():
     """)
 
     cursor.execute("""
-        INSERT INTO comanda (pret_total,adresa_livrare,status,id_client) VALUES
-            (default,'Bulevardul chimiei pe capat','finalizata',1),
-            (default,'Bulevardul chimiei pe capat','in_desfasurare',4),
-            (default,'Botosani str Mihai Kogalniceanu nr2','finalizata',3),
-            (default,'Hollywood','finalizata',5),
-            (default,'Brasov str Frizerului nr28','in_desfasurare',2)
-    """)
-
-    cursor.execute("""
-        INSERT INTO metoda_de_plata (cash,card,id_comanda) VALUES
-        (1,0,1),
-        (0,1,2),
-        (0,1,3),
-        (0,1,4),
-        (1,0,5)
+        INSERT INTO comanda (id_client,pret_total,metoda_plata,adresa_livrare,status) VALUES
+            (1,default,'cash','Bulevardul chimiei pe capat','finalizata'),
+            (4,default,'card','Bulevardul chimiei pe capat','in_desfasurare'),
+            (3,default,'cash','Botosani str Mihai Kogalniceanu nr2','finalizata'),
+            (5,default,'card','Hollywood','finalizata'),
+            (2,default,'card','Brasov str Frizerului nr28','in_desfasurare')
     """)
 
     cursor.execute("""
@@ -302,7 +270,7 @@ def insert_data():
     cursor.execute("""
         INSERT INTO detalii_comanda (nr_prd,id_produs,id_comanda) VALUES
         (1,1,2),
-        (2,1,1),
+        (1,1,1),
         (3,2,4),
         (4,3,5),
         (5,4,3)
