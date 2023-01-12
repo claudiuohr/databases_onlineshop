@@ -94,7 +94,7 @@ def handle_delete_customer():
 def handle_products():
     conn = connect_to_database()
     cursor = conn.cursor()
-    cursor.execute("""SELECT p.id_produs,p.denumire,p.pret,p.disponibilitate FROM produs p""")
+    cursor.execute("""SELECT p.id_produs,p.denumire,p.pret,p.cantitate FROM produs p WHERE p.disponibilitate=1""")
     products = cursor.fetchall()
     return render_template('products.html',products=products)
 
@@ -102,10 +102,10 @@ def handle_products():
 def handle_add_product():
     denumire=request.form['denumire']
     pret=request.form['pret']
-    disponibilitate=request.form['disponibilitate']
+    cantitate=request.form['cantitate']
     conn = connect_to_database()
     cursor = conn.cursor()
-    cursor.execute(""" INSERT INTO produs (denumire,pret,disponibilitate) VALUES (%s,%s,%s)""",(denumire,pret,disponibilitate))
+    cursor.execute(""" INSERT INTO produs (denumire,pret,cantitate) VALUES (%s,%s,%s)""",(denumire,pret,cantitate))
     cursor.execute("COMMIT")
     return redirect('/products')
 
@@ -114,16 +114,16 @@ def handle_update_product():
     id_produs=request.form['id_produs']
     denumire=request.form['denumire']
     pret=request.form['pret']
-    disponibilitate=request.form['disponibilitate']
+    cantitate=request.form['cantitate']
     conn = connect_to_database()
     cursor = conn.cursor()
     if denumire != '':
         cursor.execute(""" UPDATE produs SET denumire=%s WHERE id_produs=%s""",(denumire,id_produs))
     if pret != '':
         cursor.execute(""" UPDATE produs SET pret=%s WHERE id_produs=%s""",(pret,id_produs))
-    if disponibilitate != '':
-        cursor.execute(""" UPDATE produs SET disponibilitate=%s WHERE id_produs=%s""",(disponibilitate,id_produs))
-    if pret != '' or disponibilitate != '' or denumire != '':
+    if cantitate != '':
+        cursor.execute(""" UPDATE produs SET cantitate=%s WHERE id_produs=%s""",(cantitate,id_produs))
+    if pret != '' or cantitate != '' or denumire != '':
         cursor.execute("COMMIT")
     return redirect('/products')
 
@@ -132,8 +132,7 @@ def handle_delete_product():
     id_produs=request.form['id_produs']
     conn = connect_to_database()
     cursor = conn.cursor()
-    cursor.execute(f"""DELETE FROM detalii_comanda WHERE id_produs={id_produs}""")
-    cursor.execute(f"""DELETE FROM produs WHERE id_produs={id_produs}""")
+    cursor.execute(f"""UPDATE produs SET disponibilitate=0 WHERE id_produs={id_produs}""")
     cursor.execute("COMMIT")
     return redirect('/products')
 
@@ -141,23 +140,42 @@ def handle_delete_product():
 def handle_orders():
     conn = connect_to_database()
     cursor = conn.cursor()
-    cursor.execute("""SELECT o.id_comanda,o.id_client,d.id_produs,d.nr_prd,o.pret_total,o.adresa_livrare,o.status FROM comanda o JOIN detalii_comanda d ON o.id_comanda=d.id_comanda""")
+    cursor.execute("""SELECT o.id_comanda,o.id_client,o.pret_total,o.adresa_livrare,o.status FROM comanda o JOIN detalii_comanda d ON o.id_comanda=d.id_comanda""")
     orders = cursor.fetchall()
     return render_template('orders.html',orders=orders)
 
-@app.route('/add_order',methods=['GET','POST'])
-def handle_add_order():
-    id_client=request.form['id_client']
-    id_produs=request.form['id_produs']
-    nr_prd=request.form['nr_prd']
-    adresa_livrare=request.form['adresa_livrare']
-    status=request.form['status']
+@app.route('/delete_order',methods=['GET','POST'])
+def handle_delete_order():
+    id_comanda=request.form['id_comanda']
     conn = connect_to_database()
     cursor = conn.cursor()
-    cursor.execute("""INSERT INTO comanda (id_client,adresa_livrare,status) VALUES (%s,%s,%s)""",(id_client,adresa_livrare,status))
-    cursor.execute("""INSERT INTO detalii_comanda (id_produs,nr_prd,id_comanda) VALUES (%s,%s,LAST_INSERT_ID())""",(id_produs,nr_prd))
+    cursor.execute(f"""DELETE FROM metoda_de_plata WHERE id_comanda={id_comanda}""")
+    cursor.execute(f"""DELETE FROM detalii_comanda WHERE id_comanda={id_comanda}""")
+    cursor.execute(f"""DELETE FROM comanda WHERE id_comanda={id_comanda}""")
     cursor.execute("COMMIT")
     return redirect('/orders')
+
+@app.route('/details_order_btn',methods=['GET','POST'])
+def handle_details_order_btn():
+    id_comanda=request.form['id_comanda']
+    conn = connect_to_database()
+    cursor = conn.cursor()
+    cursor.execute("COMMIT")
+    return redirect(f'/details_orders?id_comanda={id_comanda}')
+
+@app.route('/details_orders',methods=['GET'])
+def handle_details_order():
+    id_comanda = request.args.get('id_comanda')
+    print(id_comanda)
+    if id_comanda:   
+        conn = connect_to_database()
+        cursor = conn.cursor()
+        cursor.execute(f"""SELECT id_comanda,id_produs,nr_prd FROM detalii_comanda where id_comanda={id_comanda}""")
+        details_orders = cursor.fetchall()
+        return render_template('details_orders.html',details_orders=details_orders)
+    else:
+        return "No id_comanda provided"
+
 
 @app.route('/paying_methods',methods=['GET'])
 def handle_paying_methods():

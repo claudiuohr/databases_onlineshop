@@ -15,8 +15,6 @@
                             <tr>
                                 <th scope="col">ID_ORDER</th>
                                 <th scope="col">ID_CUSTOMER</th>
-                                <th scope="col">ID_PRODUCT</th>
-                                <th scope="col">QUANTITY</th>
                                 <th scope="col">TOTAL_PRICE</th>
                                 <th scope="col">DELIVERY_ADDRESS</th>
                                 <th scope="col">STATUS</th>
@@ -31,24 +29,21 @@
                                 <td>{{ order[3] }}</td>
                                 <td>{{ order[4] }}</td>
                                 <td>{{ order[5] }}</td>
-                                <td>{{ order[6] }}</td>
-                                <td>{{ order[7] }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
-
                 <div class="col-1" style="width:40%">
-                    
-                    <form action="/add_product" method="post">
+                    <form action="/delete_order" method="post">
                         <input type="text" name="id_comanda" id="id_comanda" placeholder="ID_ORDER" class="input_form">
-                        <input type="text" name="id_client" id="id_client" placeholder="ID_CUSTOMER" class="input_form">
-                        <input type="text" name="id_produs" id="id_produs" placeholder="ID_PRODUCT" class="input_form">
-                        <input type="text" name="nr_prd" id="nr_prd" placeholder="QUANTITY" class="input_form">
-                        <input type="text" name="adresa_livrare" id="adresa_livrare" placeholder="DELIVERY_ADDRESS" class="input_form">
-                        <input type="text" name="status" id="status" placeholder="STATUS" class="input_form">
-                        <input type="submit" value="Add Product" style="width:50%">
+                        <input type="submit" value="Delete Order" style="width:50%">
+                    </form>
+                </div>
+                <div class="col-1" style="width:40%">
+                    <form action="/details_order_btn" method="post">
+                        <input type="text" name="id_comanda" id="id_comanda" placeholder="ID_ORDER" class="input_form">
+                        <input type="submit" value="Details Order" style="width:50%">
                     </form>
                 </div>
             </div>

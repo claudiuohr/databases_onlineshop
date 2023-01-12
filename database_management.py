@@ -70,9 +70,10 @@ def create_tables():
             id_produs INT NOT NULL AUTO_INCREMENT,
             denumire   VARCHAR(30) NOT NULL,
             pret       INT NOT NULL,
-            disponibilitate INT NOT NULL,
+            cantitate INT NOT NULL,
+            disponibilitate CHAR(1) DEFAULT '1' NOT NULL,
             PRIMARY KEY (id_produs),
-            CHECK (disponibilitate > 0),
+            CHECK (cantitate > 0),
             CHECK (pret > 0)
         )
     '''
@@ -135,7 +136,7 @@ def create_tables():
         FOR EACH ROW
         BEGIN
                 UPDATE produs
-                SET disponibilitate = disponibilitate - NEW.nr_prd
+                SET cantitate = cantitate - NEW.nr_prd
                 WHERE id_produs = NEW.id_produs;
         END;
     '''
@@ -147,7 +148,7 @@ def create_tables():
             FOR EACH ROW
         BEGIN
                 UPDATE produs
-                SET disponibilitate = disponibilitate - NEW.nr_prd
+                SET cantitate = cantitate - NEW.nr_prd
                 WHERE id_produs = NEW.id_produs;
         END;
     '''
@@ -187,7 +188,7 @@ def create_tables():
         FOR EACH ROW
         BEGIN
             DECLARE dis INT;
-            SELECT disponibilitate INTO dis
+            SELECT cantitate INTO dis
             FROM produs
             WHERE id_produs = NEW.id_produs;
             
@@ -290,12 +291,12 @@ def insert_data():
     """)
 
     cursor.execute("""
-        INSERT INTO produs (denumire,pret,disponibilitate) VALUES
-        ('casti',379,15),
-        ('mouse',189,14),
-        ('monitor',1099,13),
-        ('laptop',5099,16),
-        ('tastatura',499,16)
+        INSERT INTO produs (denumire,pret,cantitate,disponibilitate) VALUES
+        ('casti',379,15,1),
+        ('mouse',189,14,1),
+        ('monitor',1099,13,1),
+        ('laptop',5099,16,1),
+        ('tastatura',499,16,1)
     """)
 
     cursor.execute("""
