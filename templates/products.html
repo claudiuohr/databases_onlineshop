@@ -55,10 +55,11 @@
                     </form>
                 </div>
                 <div class="col-1" style="width:40%">
-                    <form action="/add_to_cart" method="post">
+                    <form action="/add_to_order" method="post">
+                        <input type="text" name="id_comanda" id="id_comanda" placeholder="ID_ORDER" class="input_form">
                         <input type="text" name="id_produs" id="id_produs" placeholder="ID_PRODUCT" class="input_form">
                         <input type="text" name="cantitate" id="cantitate" placeholder="Quantity" class="input_form">
-                        <input type="submit" value="Add to cart" style="width:50%">
+                        <input type="submit" value="Add to order" style="width:50%">
                     </form>
                 </div>
             </div>

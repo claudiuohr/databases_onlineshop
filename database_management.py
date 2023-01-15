@@ -15,8 +15,26 @@ def create_tables():
     cursor.execute('''
         CREATE TABLE client (
             id_client  INT NOT NULL AUTO_INCREMENT,
-            membership CHAR(1) DEFAULT '0' NOT NULL,
+            membership CHAR(1) DEFAULT '0',
             PRIMARY KEY (id_client)
+        )
+    '''
+    )
+
+    cursor.execute(''' 
+        CREATE TABLE detalii_client (
+            id_client    INT         NOT NULL,
+            nume         VARCHAR(25) NOT NULL,
+            prenume      VARCHAR(25) NOT NULL,
+            adresa       VARCHAR(40),
+            adresa_email VARCHAR(40) UNIQUE NOT NULL,
+            nr_telefon   CHAR(10)    UNIQUE NOT NULL,
+            constraint detalii_comanda_email      CHECK (adresa_email REGEXP '[a-z0-9._%-]+@[a-z0-9._%-]+\.[a-z]{2,4}'),
+            constraint detalii_comanda_nr_telefon CHECK (nr_telefon REGEXP '^[0][:7:3:2][0-9 ]*$'),
+            constraint detalii_comanda_nume       CHECK (nume REGEXP '^[a-z ,.-]+$'),
+            constraint detalii_comanda_prenume    CHECK (prenume REGEXP '^[a-z ,.-]+$'),
+            PRIMARY KEY (id_client),
+            FOREIGN KEY (id_client) REFERENCES client(id_client)
         )
     '''
     )
@@ -26,7 +44,7 @@ def create_tables():
             id_comanda     INT NOT NULL AUTO_INCREMENT,
             id_client      INT NOT NULL,
             pret_total     INT DEFAULT '0',
-            metoda_plata   VARCHAR(20) NOT NULL,
+            metoda_plata   VARCHAR(20) default 'cash',
             adresa_livrare VARCHAR(40) NOT NULL,
             status         VARCHAR(20) NOT NULL,
             PRIMARY KEY (id_comanda),
@@ -39,33 +57,16 @@ def create_tables():
     )
 
     cursor.execute(''' 
-        CREATE TABLE detalii_client (
-            id_client    INT NOT NULL,
-            nume         VARCHAR(25) NOT NULL,
-            prenume      VARCHAR(25) NOT NULL,
-            adresa       VARCHAR(40),
-            adresa_email VARCHAR(40) UNIQUE NOT NULL,
-            nr_telefon   CHAR(10) UNIQUE NOT NULL,
-            constraint detalii_comanda_email CHECK (adresa_email REGEXP '[a-z0-9._%-]+@[a-z0-9._%-]+\.[a-z]{2,4}'),
-            constraint detalii_comanda_nr_telefon CHECK (nr_telefon REGEXP '^[0][:7:3:2][0-9 ]*$'),
-            constraint detalii_comanda_nume CHECK (nume REGEXP '[A-Za-z]*'),
-            constraint detalii_comanda_prenume CHECK (prenume REGEXP '[A-Za-z]*'),
-            PRIMARY KEY (id_client),
-            FOREIGN KEY (id_client) REFERENCES client(id_client)
-        )
-    '''
-    )
-
-    cursor.execute(''' 
         CREATE TABLE produs (
             id_produs  INT NOT NULL AUTO_INCREMENT,
             denumire   VARCHAR(30) NOT NULL,
             pret       INT NOT NULL,
             cantitate  INT NOT NULL,
-            disponibilitate CHAR(1) DEFAULT '1' NOT NULL,
+            disponibilitate CHAR(1) DEFAULT '1',
             PRIMARY KEY (id_produs),
-            constraint produs_cantitate CHECK (cantitate > 0),
-            constraint produs_pret CHECK (pret > 0)
+            constraint produs_denumire      CHECK (denumire REGEXP '^[a-z ,.-]+$'),
+            constraint produs_cantitate     CHECK (cantitate > 0),
+            constraint produs_pret          CHECK (pret > 0)
         )
     '''
     )
@@ -81,14 +82,6 @@ def create_tables():
         )
     '''
     )
-
-    cursor.execute('''
-        CREATE TABLE cos (
-            id_produs INT NOT NULL,
-            cantitate INT NOT NULL,
-            FOREIGN KEY (id_produs) REFERENCES produs(id_produs)
-        )
-    ''')
 
     cursor.execute(''' 
         CREATE TRIGGER Trg_comanda_pret_total_insert
@@ -131,8 +124,8 @@ def create_tables():
 
     cursor.execute(''' 
         CREATE TRIGGER Trg_update_prd_disp_insert
-        AFTER INSERT ON detalii_comanda
-        FOR EACH ROW
+            AFTER INSERT ON detalii_comanda
+            FOR EACH ROW
         BEGIN
                 UPDATE produs
                 SET cantitate = cantitate - NEW.nr_prd
@@ -159,10 +152,9 @@ def create_tables():
         FOR EACH ROW
         BEGIN
             UPDATE comanda
-            SET pret_total = (SELECT SUM(d.nr_prd * p.pret)
+            SET pret_total =(SELECT SUM(nr_prd * p.pret)
                             FROM detalii_comanda d, produs p
-                            WHERE d.id_produs = p.id_produs
-                            AND d.id_comanda = comanda.id_comanda);
+                            WHERE d.id_produs = p.id_produs AND d.id_comanda = comanda.id_comanda);
         END;
     '''
     )
@@ -173,10 +165,9 @@ def create_tables():
         FOR EACH ROW
         BEGIN
             UPDATE comanda
-            SET pret_total = (SELECT SUM(d.nr_prd * p.pret)
-                            FROM detalii_comanda d, produs p
-                            WHERE d.id_produs = p.id_produs
-                            AND d.id_comanda = comanda.id_comanda);
+            SET pret_total =(SELECT SUM(nr_prd * p.pret)
+                            FROM detalii_comanda d , produs p
+                            WHERE d.id_produs = p.id_produs AND d.id_comanda = comanda.id_comanda);
         END;
     '''
     )

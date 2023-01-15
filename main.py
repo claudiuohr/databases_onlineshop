@@ -44,7 +44,10 @@ def handle_add_customer():
     nr_telefon = request.form['nr_telefon']
     conn = connect_to_database()
     cursor = conn.cursor()
-    cursor.execute(f"""INSERT INTO client (membership) VALUES ({membership})""")
+    if membership != '':
+        cursor.execute(f"""INSERT INTO client (membership) VALUES ({membership})""")
+    else:
+        cursor.execute(f"""INSERT INTO client (membership) VALUES (DEFAULT)""")
     cursor.execute("""INSERT INTO detalii_client (nume,prenume,adresa,adresa_email,nr_telefon,id_client) VALUES (%s,%s,%s,%s,%s, LAST_INSERT_ID())""",(nume,prenume,adresa,adresa_email,nr_telefon))
     cursor.execute("COMMIT")
     return redirect('/customers')
@@ -60,6 +63,8 @@ def handle_update_customer():
     nr_telefon = request.form['nr_telefon']
     conn = connect_to_database()
     cursor = conn.cursor()
+    if id_client == '':
+        return redirect('/customers')
     if membership != '':
         cursor.execute(f"""UPDATE client SET membership={membership} WHERE id_client={id_client}""")
     if nume != '':
@@ -83,7 +88,6 @@ def handle_delete_customer():
     conn = connect_to_database()
     cursor = conn.cursor()
     cursor.execute(f"""DELETE FROM detalii_client WHERE id_client={id_client}""")
-    cursor.execute(f"""DELETE FROM metoda_de_plata WHERE id_comanda IN (SELECT id_comanda FROM comanda WHERE id_client={id_client})""")
     cursor.execute(f"""DELETE FROM detalii_comanda WHERE id_comanda IN (SELECT id_comanda FROM comanda WHERE id_client={id_client})""")
     cursor.execute(f"""DELETE FROM comanda WHERE id_client={id_client}""")
     cursor.execute(f"""DELETE FROM client WHERE id_client={id_client}""")
@@ -117,6 +121,12 @@ def handle_update_product():
     cantitate=request.form['cantitate']
     conn = connect_to_database()
     cursor = conn.cursor()
+    if id_produs == '':
+        return redirect('/products')
+    cursor.execute(f"""Select disponibilitate from produs where id_produs={id_produs}""")
+    disponibilitate = cursor.fetchone()[0]
+    if disponibilitate == '0':
+        return redirect('/products')
     if denumire != '':
         cursor.execute(""" UPDATE produs SET denumire=%s WHERE id_produs=%s""",(denumire,id_produs))
     if pret != '':
@@ -136,23 +146,30 @@ def handle_delete_product():
     cursor.execute("COMMIT")
     return redirect('/products')
 
-@app.route('/add_to_cart',methods=['GET','POST'])
-def handle_add_to_cart():
+@app.route('/add_to_order',methods=['GET','POST'])
+def handle_add_to_order():
+    id_comanda=request.form['id_comanda']
     id_produs=request.form['id_produs']
-    cantitate=request.form['cantitate']
+    nr_prd=request.form['cantitate']
     conn = connect_to_database()
     cursor = conn.cursor()
-    cursor.execute("""INSERT INTO cos (id_produs,cantitate) VALUES (%s,%s)""",(id_produs,cantitate))
+    if id_produs == '' or nr_prd == '' or id_comanda == '':
+        return redirect('/products')
+    cursor.execute(f"""Select disponibilitate from produs where id_produs={id_produs}""")
+    disponibilitate = cursor.fetchone()[0]
+    if disponibilitate == '0':
+        return redirect('/products')
+    cursor.execute(""" select id_produs from detalii_comanda where id_produs=%s and id_comanda=%s""",(id_produs,id_comanda))
+    id_produs_in_cos = cursor.fetchone()
+    if id_produs_in_cos != None:
+        cursor.execute("""select nr_prd from detalii_comanda where id_produs=%s and id_comanda=%s""",(id_produs,id_comanda))
+        nr_prd_adaugat = cursor.fetchone()[0]
+        nr_prd = int(nr_prd) + int(nr_prd_adaugat)
+        cursor.execute("""UPDATE detalii_comanda SET nr_prd=%s WHERE id_produs=%s and id_comanda=%s""",(nr_prd,id_produs,id_comanda))
+    else:
+        cursor.execute("""INSERT INTO detalii_comanda (id_produs,nr_prd,id_comanda) VALUES (%s,%s,%s)""",(id_produs,nr_prd,id_comanda))
     cursor.execute("COMMIT")
     return redirect('/products')
-
-@app.route('/cart',methods=['GET'])
-def handle_cart():
-    conn = connect_to_database()
-    cursor = conn.cursor()
-    cursor.execute("""SELECT c.id_produs,p.denumire,p.pret,c.cantitate FROM produs p JOIN cos c ON p.id_produs=c.id_produs""")
-    cart = cursor.fetchall()
-    return render_template('cart.html',cart=cart)
 
 @app.route('/modify_cart',methods=['GET','POST'])
 def handle_modify_cart():
@@ -160,6 +177,8 @@ def handle_modify_cart():
     cantitate=request.form['cantitate']
     conn = connect_to_database()
     cursor = conn.cursor()
+    if id_produs == '':
+        return redirect('/cart')
     if cantitate != '':
         cursor.execute("""UPDATE cos SET cantitate=%s WHERE id_produs=%s""",(cantitate,id_produs))
     if cantitate == '0':
@@ -182,6 +201,8 @@ def handle_purchase():
     adresa_livrare=request.form['adresa_livrare']
     conn = connect_to_database()
     cursor = conn.cursor()
+    if id_client == '':
+        return redirect('/cart')
     cursor.execute("""SELECT id_produs,cantitate FROM cos""")
     cart = cursor.fetchall()
     cursor.execute("""INSERT INTO comanda (id_client,pret_total,metoda_plata,adresa_livrare,status) VALUES (%s,%s,%s,%s,%s)""",(id_client,0,metoda_plata,adresa_livrare,'in_curs_de_procesare'))
@@ -211,6 +232,52 @@ def handle_delete_order():
     cursor.execute("COMMIT")
     return redirect('/orders')
 
+@app.route('/add_order',methods=['GET','POST'])
+def handle_add_order():
+    id_client=request.form['id_client']
+    metoda_plata=request.form['metoda_plata']
+    adresa_livrare=request.form['adresa_livrare']
+    conn = connect_to_database()
+    cursor = conn.cursor()
+    if id_client == '' or adresa_livrare == '':
+        return redirect('/orders')
+    cursor.execute("""INSERT INTO comanda (id_client,pret_total,metoda_plata,adresa_livrare,status) VALUES (%s,%s,%s,%s,%s)""",(id_client,0,metoda_plata,adresa_livrare,'in_curs_de_procesare'))
+    cursor.execute("COMMIT")
+    return redirect('/orders')
+
+@app.route('/modify_order',methods=['GET','POST'])
+def handle_modify_order():
+    id_comanda=request.form['id_comanda']
+    metoda_plata=request.form['metoda_plata']
+    adresa_livrare=request.form['adresa_livrare']
+    status=request.form['status']
+    conn = connect_to_database()
+    cursor = conn.cursor()
+    if id_comanda == '' :
+        return redirect('/orders')
+    if metoda_plata != '' :
+        cursor.execute("""UPDATE comanda SET metoda_plata=%s WHERE id_comanda=%s""",(metoda_plata,id_comanda))
+    if adresa_livrare != '' :
+        cursor.execute("""UPDATE comanda SET adresa_livrare=%s WHERE id_comanda=%s""",(adresa_livrare,id_comanda))
+    if status != '' :
+        cursor.execute("""UPDATE comanda SET status=%s WHERE id_comanda=%s""",(status,id_comanda))
+    if metoda_plata == '' and adresa_livrare == '' and status == '' :
+        return redirect('/orders')
+    cursor.execute("COMMIT")
+    return redirect('/orders')
+
+@app.route('/modify_product_quantity',methods=['GET','POST'])
+def handle_modify_product_quantity():
+    id_produs=request.form['id_produs']
+    cantitate=request.form['cantitate']
+    conn = connect_to_database()
+    cursor = conn.cursor()
+    if id_produs == '' or cantitate == '':
+        return redirect('/orders')
+    cursor.execute("""UPDATE detalii SET cantitate=%s WHERE id_produs=%s and id_comanda""",(cantitate,id_produs,id_comanda))
+    cursor.execute("COMMIT")
+    return redirect('/orders')
+
 @app.route('/details_order_btn',methods=['GET','POST'])
 def handle_details_order_btn():
     id_comanda=request.form['id_comanda']
@@ -225,7 +292,8 @@ def handle_details_order():
     if id_comanda:   
         conn = connect_to_database()
         cursor = conn.cursor()
-        cursor.execute(f"""SELECT id_comanda,id_produs,nr_prd FROM detalii_comanda where id_comanda={id_comanda}""")
+        cursor.execute(f"""SELECT d.id_comanda,d.id_produs,p.denumire,d.nr_prd,p.pret FROM detalii_comanda d join produs p on d.id_produs=p.id_produs 
+        where id_comanda={id_comanda}""")
         details_orders = cursor.fetchall()
         return render_template('details_orders.html',details_orders=details_orders)
     else:
