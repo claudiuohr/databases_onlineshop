@@ -33,6 +33,47 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="col-1" style="width:60%">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">ID_ORDER</th>
+                                <th scope="col">ID_CUSTOMER</th>
+                                <th scope="col">TOTAL_PRICE</th>
+                                <th scope="col">PAYING_METHOD</th>
+                                <th scope="col">DELIVERY_ADDRESS</th>
+                                <th scope="col">STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for detail in details %}
+                            <tr>
+                                <th scope="row">{{ detail[0] }}</th>
+                                <td>{{ detail[1] }}</td>
+                                <td>{{ detail[2] }}</td>
+                                <td>{{ detail[3] }}</td>
+                                <td>{{ detail[4] }}</td>
+                                <td>{{ detail[5] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-1" style="width:40%">
+                    <form action="/modify_order" method="post">
+                        <input type="text" name="metoda_plata" id="metoda_plata" placeholder="PAYING_METHOD" class="input_form">
+                        <input type="text" name="adresa_livrare" id="adresa_livrare" placeholder="DELIVERY_ADDRESS" class="input_form">
+                        <input type="text" name="status" id="status" placeholder="STATUS" class="input_form">
+                        <input type="submit" value="Modify Order" style="width:50%">
+                    </form>
+                </div>
+                <div class="col-1" style="width:40%">
+                    <form action="/modify_quantity" method="post">
+                        <input type="text" name="id_produs" id="id_produs" placeholder="ID_PRODUCT" class="input_form">
+                        <input type="text" name="nr_prd" id="nr_prd" placeholder="QUANTITY" class="input_form">
+                        <input type="submit" value="Modify Quantity" style="width:50%">
+                    </form>
+                </div>
             </div>
         </div>
         {% include 'blocks/js_links.html' %}

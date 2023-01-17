@@ -16,6 +16,7 @@ def create_tables():
         CREATE TABLE client (
             id_client  INT NOT NULL AUTO_INCREMENT,
             membership CHAR(1) DEFAULT '0',
+            constraint client_membership CHECK (membership IN ('1', '0')),
             PRIMARY KEY (id_client)
         )
     '''
@@ -65,7 +66,7 @@ def create_tables():
             disponibilitate CHAR(1) DEFAULT '1',
             PRIMARY KEY (id_produs),
             constraint produs_denumire      CHECK (denumire REGEXP '^[a-z ,.-]+$'),
-            constraint produs_cantitate     CHECK (cantitate > 0),
+            constraint produs_cantitate     CHECK (cantitate >= 0),
             constraint produs_pret          CHECK (pret > 0)
         )
     '''
@@ -140,7 +141,7 @@ def create_tables():
             FOR EACH ROW
         BEGIN
                 UPDATE produs
-                SET cantitate = cantitate - NEW.nr_prd
+                SET cantitate = cantitate - (NEW.nr_prd-OLD.nr_prd)
                 WHERE id_produs = NEW.id_produs;
         END;
     '''
@@ -190,7 +191,6 @@ def create_tables():
     '''
     )
 
-    
 
     cursor.execute("COMMIT")
 
