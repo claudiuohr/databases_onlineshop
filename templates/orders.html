@@ -35,24 +35,20 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="col-1" style="width:40%">
-                    <form action="/delete_order" method="post">
-                        <input type="text" name="id_comanda" id="id_comanda" placeholder="ID_ORDER" class="input_form">
-                        <input type="submit" value="Delete Order" style="width:50%">
-                    </form>
-                </div>
-                <div class="col-1" style="width:40%">
-                    <form action="/details_order_btn" method="post">
-                        <input type="text" name="id_comanda" id="id_comanda" placeholder="ID_ORDER" class="input_form">
-                        <input type="submit" value="Details Order" style="width:50%">
-                    </form>
-                </div>
-                <div class="col-1" style="width:40%">
+                <div class="col-1" style="width:40%;">
                     <form action="/add_order" method="post">
                         <input type="text" name="id_client" id="id_client" placeholder="ID_CUSTOMER" class="input_form">
                         <input type="text" name="metoda_plata" id="metoda_plata" placeholder="PAYING_METHOD" class="input_form">
                         <input type="text" name="adresa_livrare" id="adresa_livrare" placeholder="DELIVERY_ADDRESS" class="input_form">
                         <input type="submit" value="Add Order" style="width:50%">
+                    </form>
+                    <form action="/details_order_btn" method="post">
+                        <input type="text" name="id_comanda" id="id_comanda" placeholder="ID_ORDER" class="input_form">
+                        <input type="submit" value="Details Order" style="width:50%">
+                    </form>
+                    <form action="/delete_order" method="post">
+                        <input type="text" name="id_comanda" id="id_comanda" placeholder="ID_ORDER" class="input_form">
+                        <input type="submit" value="Delete Order" style="width:50%">
                     </form>
                 </div>
             </div>

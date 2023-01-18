@@ -260,7 +260,6 @@ def handle_modify_order():
         cursor.execute("""UPDATE comanda SET adresa_livrare=%s WHERE id_comanda=%s""",(adresa_livrare,id_comanda_details))
     if status != '':
         cursor.execute("""UPDATE comanda SET status=%s WHERE id_comanda=%s""",(status,id_comanda_details))
-    cursor.execute(f"""UPDATE detalii_comanda SET pret_la_unitate=(select pret from produs where id_produs=detalii_comanda.id_produs)""")
     cursor.execute("COMMIT")
     return redirect('/details_orders')
 

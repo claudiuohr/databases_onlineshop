@@ -14,30 +14,6 @@
                         <thead>
                             <tr>
                                 <th scope="col">ID_ORDER</th>
-                                <th scope="col">ID_PRODUCT</th>
-                                <th scope="col">NAME</th>
-                                <th scope="col">QUANTITY</th>
-                                <th scope="col">PRICE</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for details_order in details_orders %}
-                            <tr>
-                                <th scope="row">{{ details_order[0] }}</th>
-                                <td>{{ details_order[1] }}</td>
-                                <td>{{ details_order[2] }}</td>
-                                <td>{{ details_order[3] }}</td>
-                                <td>{{ details_order[4] }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                <div class="col-1" style="width:60%">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th scope="col">ID_ORDER</th>
                                 <th scope="col">ID_CUSTOMER</th>
                                 <th scope="col">TOTAL_PRICE</th>
                                 <th scope="col">PAYING_METHOD</th>
@@ -58,6 +34,28 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">ID_ORDER</th>
+                                <th scope="col">ID_PRODUCT</th>
+                                <th scope="col">NAME</th>
+                                <th scope="col">QUANTITY</th>
+                                <th scope="col">PRICE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for details_order in details_orders %}
+                            <tr>
+                                <th scope="row">{{ details_order[0] }}</th>
+                                <td>{{ details_order[1] }}</td>
+                                <td>{{ details_order[2] }}</td>
+                                <td>{{ details_order[3] }}</td>
+                                <td>{{ details_order[4] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
                 <div class="col-1" style="width:40%">
                     <form action="/modify_order" method="post">
@@ -66,8 +64,6 @@
                         <input type="text" name="status" id="status" placeholder="STATUS" class="input_form">
                         <input type="submit" value="Modify Order" style="width:50%">
                     </form>
-                </div>
-                <div class="col-1" style="width:40%">
                     <form action="/modify_quantity" method="post">
                         <input type="text" name="id_produs" id="id_produs" placeholder="ID_PRODUCT" class="input_form">
                         <input type="text" name="nr_prd" id="nr_prd" placeholder="QUANTITY" class="input_form">
