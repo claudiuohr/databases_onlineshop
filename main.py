@@ -190,58 +190,17 @@ def handle_add_to_order():
         return "Cantitatea trebuie sa fie mai mare decat 0!"
     cursor.execute(""" select id_produs from detalii_comanda where id_produs=%s and id_comanda=%s""",(id_produs,id_comanda))
     id_produs_in_comanda = cursor.fetchone()
+    cursor.execute(f"""select pret from produs where id_produs={id_produs}""")
+    pret = cursor.fetchone()[0]
     if id_produs_in_comanda != None:
         cursor.execute("""select nr_prd from detalii_comanda where id_produs=%s and id_comanda=%s""",(id_produs,id_comanda))
         nr_prd_adaugat = cursor.fetchone()[0]
         nr_prd = int(nr_prd) + int(nr_prd_adaugat)
-        cursor.execute("""UPDATE detalii_comanda SET nr_prd=%s WHERE id_produs=%s and id_comanda=%s""",(nr_prd,id_produs,id_comanda))
+        cursor.execute("""UPDATE detalii_comanda SET nr_prd=%s,pret_la_unitate=%s WHERE id_produs=%s and id_comanda=%s""",(nr_prd,pret,id_produs,id_comanda))
     else:
-        cursor.execute("""INSERT INTO detalii_comanda (id_produs,nr_prd,id_comanda) VALUES (%s,%s,%s)""",(id_produs,nr_prd,id_comanda))
+        cursor.execute("""INSERT INTO detalii_comanda (id_produs,nr_prd,id_comanda,pret_la_unitate) VALUES (%s,%s,%s,%s)""",(id_produs,nr_prd,id_comanda,pret))
     cursor.execute("COMMIT")
     return redirect('/products')
-
-@app.route('/modify_cart',methods=['GET','POST'])
-def handle_modify_cart():
-    id_produs=request.form['id_produs']
-    cantitate=request.form['cantitate']
-    conn = connect_to_database()
-    cursor = conn.cursor()
-    if id_produs == '':
-        return redirect('/cart')
-    if cantitate != '':
-        cursor.execute("""UPDATE cos SET cantitate=%s WHERE id_produs=%s""",(cantitate,id_produs))
-    if cantitate == '0':
-        cursor.execute(f"""DELETE FROM cos WHERE id_produs={id_produs}""")
-    cursor.execute("COMMIT")
-    return redirect('/cart')
-
-@app.route('/empty_cart',methods=['GET','POST'])
-def handle_empty_cart():
-    conn = connect_to_database()
-    cursor = conn.cursor()
-    cursor.execute("""DELETE FROM cos""")
-    cursor.execute("COMMIT")
-    return redirect('/cart')
-
-@app.route('/purchase',methods=['GET','POST'])
-def handle_purchase():
-    id_client=request.form['id_client']
-    metoda_plata=request.form['metoda_plata']
-    adresa_livrare=request.form['adresa_livrare']
-    conn = connect_to_database()
-    cursor = conn.cursor()
-    if id_client == '':
-        return redirect('/cart')
-    cursor.execute("""SELECT id_produs,cantitate FROM cos""")
-    cart = cursor.fetchall()
-    cursor.execute("""INSERT INTO comanda (id_client,pret_total,metoda_plata,adresa_livrare,status) VALUES (%s,%s,%s,%s,%s)""",(id_client,0,metoda_plata,adresa_livrare,'in_curs_de_procesare'))
-    cursor.execute("COMMIT")
-    for product in cart:
-        cursor.execute("""INSERT INTO detalii_comanda (id_comanda,id_produs,nr_prd) VALUES (LAST_INSERT_ID(),%s,%s)""",(product[0],product[1]))
-        cursor.execute("COMMIT")
-    cursor.execute("""DELETE FROM cos""")
-    cursor.execute("COMMIT")
-    return redirect('/cart')
 
 @app.route('/orders',methods=['GET'])
 def handle_orders():
@@ -271,6 +230,14 @@ def handle_add_order():
     if id_client == '' or adresa_livrare == '':
         return "Nu ati introdus toate datele necesare!"
     cursor.execute("""INSERT INTO comanda (id_client,pret_total,metoda_plata,adresa_livrare,status) VALUES (%s,%s,%s,%s,%s)""",(id_client,0,metoda_plata,adresa_livrare,'in_curs_de_procesare'))
+    cursor.execute("""select id_produs,pret from produs p """)
+    produs_nou=cursor.fetchall()
+    cursor.execute(f"""select id_produs from detalii_comanda where id_comanda={id_comanda_details}""")
+    produse_comanda=cursor.fetchall()
+    for j in produse_comanda:
+        for i in produs_nou:
+            if i[0] == j[0]:
+                cursor.execute("""UPDATE detalii_comanda SET pret_la_unitate=%s WHERE id_produs=%s""",(i[1],i[0]))
     cursor.execute("COMMIT")
     return redirect('/orders')
 
@@ -293,6 +260,7 @@ def handle_modify_order():
         cursor.execute("""UPDATE comanda SET adresa_livrare=%s WHERE id_comanda=%s""",(adresa_livrare,id_comanda_details))
     if status != '':
         cursor.execute("""UPDATE comanda SET status=%s WHERE id_comanda=%s""",(status,id_comanda_details))
+    cursor.execute(f"""UPDATE detalii_comanda SET pret_la_unitate=(select pret from produs where id_produs=detalii_comanda.id_produs)""")
     cursor.execute("COMMIT")
     return redirect('/details_orders')
 
@@ -307,12 +275,17 @@ def handle_modify_quantity():
         return "Nu ati selectat o comanda!"
     cursor.execute("""SELECT id_produs FROM detalii_comanda WHERE id_produs=%s and id_comanda=%s""",(id_produs,id_comanda_details))
     if cursor.fetchone() == None:
-        print('\n\n\n\n\n\n ')
-        print(id_produs)
-        print(id_comanda_details)
         return "Nu exista un produs cu acest id in aceasta comanda!"
     if nr_prd == '':
         return "Nu ati introdus nici o modificare!"
+    cursor.execute("""select id_produs,pret from produs p """)
+    produs_nou=cursor.fetchall()
+    cursor.execute(f"""select id_produs from detalii_comanda where id_comanda={id_comanda_details}""")
+    produse_comanda=cursor.fetchall()
+    for j in produse_comanda:
+        for i in produs_nou:
+            if i[0] == j[0]:
+                cursor.execute("""UPDATE detalii_comanda SET pret_la_unitate=%s WHERE id_produs=%s""",(i[1],i[0]))
     cursor.execute("""UPDATE detalii_comanda SET nr_prd=%s WHERE id_comanda=%s AND id_produs=%s""",(nr_prd,id_comanda_details,id_produs))
     cursor.execute("COMMIT")
     return redirect('/details_orders')
@@ -337,7 +310,7 @@ def handle_details_order():
     if id_comanda_details:   
         conn = connect_to_database()
         cursor = conn.cursor()
-        cursor.execute(f"""SELECT d.id_comanda,d.id_produs,p.denumire,d.nr_prd,p.pret FROM detalii_comanda d join produs p on d.id_produs=p.id_produs 
+        cursor.execute(f"""SELECT d.id_comanda,d.id_produs,p.denumire,d.nr_prd,d.pret_la_unitate FROM detalii_comanda d join produs p on d.id_produs=p.id_produs 
         where id_comanda={id_comanda_details}""")
         details_orders = cursor.fetchall()
         cursor.execute(f"""SELECT * from comanda where id_comanda={id_comanda_details}""")

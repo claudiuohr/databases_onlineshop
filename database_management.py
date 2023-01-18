@@ -77,6 +77,8 @@ def create_tables():
             id_comanda INT NOT NULL,
             id_produs INT NOT NULL,
             nr_prd     INT NOT NULL,
+            pret_la_unitate INT NOT NULL,
+            constraint detalii_comanda_pret CHECK (pret_la_unitate > 0),
             PRIMARY KEY (id_comanda,id_produs),
             FOREIGN KEY (id_comanda) REFERENCES comanda(id_comanda),
             FOREIGN KEY (id_produs) REFERENCES produs(id_produs)
@@ -259,12 +261,12 @@ def insert_data():
     """)
 
     cursor.execute("""
-        INSERT INTO detalii_comanda (nr_prd,id_produs,id_comanda) VALUES
-        (1,1,2),
-        (1,1,1),
-        (3,2,4),
-        (4,3,5),
-        (5,4,3)
+        INSERT INTO detalii_comanda (nr_prd,id_produs,id_comanda,pret_la_unitate) VALUES
+        (1,1,2,379),
+        (1,1,1,379),
+        (3,2,4,189),
+        (4,3,5,1099),
+        (5,4,3,5099)
     """)
     
     cursor.execute("COMMIT")
