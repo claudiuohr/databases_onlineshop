@@ -60,7 +60,7 @@ def create_tables():
     cursor.execute(''' 
         CREATE TABLE produs (
             id_produs  INT NOT NULL AUTO_INCREMENT,
-            denumire   VARCHAR(30) NOT NULL,
+            denumire   VARCHAR(30) UNIQUE NOT NULL,
             pret       INT NOT NULL,
             cantitate  INT NOT NULL,
             disponibilitate CHAR(1) DEFAULT '1',

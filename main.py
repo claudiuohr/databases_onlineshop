@@ -196,6 +196,9 @@ def handle_add_to_order():
         return "Comanda nu exista!"
     if int(nr_prd) <= 0:
         return "Cantitatea trebuie sa fie mai mare decat 0!"
+    cursor.execute(f"""select cantitate from produs where id_produs={id_produs}""")
+    if int(cursor.fetchone()[0]) < int(nr_prd):
+        return "Nu sunt disponibile atatea bucati!"
     cursor.execute(""" select id_produs from detalii_comanda where id_produs=%s and id_comanda=%s""",(id_produs,id_comanda))
     id_produs_in_comanda = cursor.fetchone()
     cursor.execute(f"""select pret from produs where id_produs={id_produs}""")
@@ -291,6 +294,11 @@ def handle_modify_quantity():
         return "Nu exista un produs cu acest id in aceasta comanda!"
     if nr_prd == '':
         return "Nu ati introdus nici o modificare!"
+    if int (nr_prd) < 0:
+        return "Cantitatea trebuie sa fie mai mare decat 0"
+    cursor.execute(f"""select cantitate from produs where id_produs={id_produs}""")
+    if int(cursor.fetchone()[0]) < int(nr_prd):
+        return "Nu sunt disponibile atatea bucati!"
     cursor.execute("""select id_produs,pret from produs p """)
     produs_nou=cursor.fetchall()
     cursor.execute(f"""select id_produs from detalii_comanda where id_comanda={id_comanda_details}""")
